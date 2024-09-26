@@ -1,0 +1,12 @@
+__pycache__
+
+*.h5
+*.png
+*.pdf
+*.json
+*.xlsx
+.*yaml
+
+*.sh
+*.csv
+*.dat
