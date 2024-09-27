@@ -89,4 +89,4 @@ def style_loss(y, y_s):
 
 def total_variation_loss(y):
     """Encourages smoothness in the generated series by penalizing large changes."""
-    return tf.reduce_sum(tf.square(y[1:] - y[:-1]))
+    return tf.reduce_sum(tf.square(y[0, 1:] - y[0, :-1]))
