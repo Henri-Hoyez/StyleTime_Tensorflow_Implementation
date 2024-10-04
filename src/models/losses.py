@@ -1,7 +1,7 @@
 import numpy as np
 
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # This will make TensorFlow run on CPU
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # This will make TensorFlow run on CPU
 
 
 import tensorflow as tf

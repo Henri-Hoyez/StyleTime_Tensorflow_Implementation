@@ -1,16 +1,19 @@
 import numpy as np
 
 import os
+
+from utils import gpu_memory_grow
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # This will make TensorFlow run on CPU
 
 import tensorflow as tf
-from src.models import losses, gpu_memory_grow
+from tensorflow import keras
+from src.models import losses
 from src.data import data_loader
 import matplotlib.pyplot as plt
 
 
 # This is for force the initialization of keras.
-test = tf.keras.layers.Dense(100)
+test = keras.layers.Dense(100)
 gpus = tf.config.list_physical_devices('GPU')
 gpu_memory_grow.gpu_memory_grow(gpus)
 
@@ -58,8 +61,8 @@ def style_time(content_series, style_series, iterations=5000, alpha=0.5 , beta=1
 # Example Usage
 if __name__ == '__main__':
     
-    content_data_path = "src/data/raw/simulated_dataset/01 - Source Domain.h5"
-    style_data_path = "src/data/raw/simulated_dataset/time_shift/2.h5"
+    content_data_path = "data/simulated_dataset/01 - Source Domain.h5"
+    style_data_path = "data/simulated_dataset/amplitude_shift/2.0_2.0.h5"
     
     dset_content_train, dset_content_valid = data_loader.loading_wrapper(content_data_path, 64, 1, 0.5, 1, shuffle=True)
     dset_style_train, dset_style_valid = data_loader.loading_wrapper(style_data_path, 64, 1, 0.5, 1, shuffle=True)
