@@ -64,19 +64,24 @@ def get_name(path:str):
     filename = path.split("/")[-1]
     return ".".join(filename.split('.')[:-1])
 
+
+
+
 def generate(
     dset_content:tf.data.Dataset, 
     dset_style:tf.data.Dataset,
-    progress_dict, process_id):
+    progress_dict, 
+    return_dict, 
+    process_id, 
+    n_sequences=2500):
     
     sequences, labels = [], []
     content_style_dataset = tf.data.Dataset.zip(dset_content, dset_style)
-    n_sequence = 2500
     
-    for i, ((ts_content, label), (ts_style, _)) in enumerate(content_style_dataset.take(n_sequence)):
-        generated_sequence, _,_,_ = style_time(ts_content, ts_style, iterations=2500)
+    for i, ((ts_content, label), (ts_style, _)) in enumerate(content_style_dataset.take(n_sequences)):
+        generated_sequence, _,_,_ = style_time(ts_content, ts_style, iterations=1500)
         
-        progress_dict[process_id] = (i, n_sequence)
+        progress_dict[process_id] = (i, n_sequences)
 
         sequences.append(generated_sequence)
         labels.append(label)
@@ -84,8 +89,8 @@ def generate(
     sequences = np.array(sequences)
     labels = np.array(labels)
     
-    return (sequences, labels)
-
+    return_dict[process_id] = (sequences, labels)
+    
 
 def print_progress(_i, _n_sequences, terminal_width):
     percentage = _i/_n_sequences
@@ -105,16 +110,19 @@ def make_generated_dataset(
 
     dset_content_train, dset_content_valid = data_loader.loading_wrapper(content_path, 64, 1, 0.5, 1, shuffle=True, drop_labels=False)
     dset_style_train, dset_style_valid = data_loader.loading_wrapper(style_path, 64, 1, 0.5, 1, shuffle=True, drop_labels=False)
-
+    
     # Extract labels.
     labeled_content_train, labeled_content_valid  = extract_labels(dset_content_train), extract_labels(dset_content_valid)
     labeled_style_train, labeled_style_valid = extract_labels(dset_style_train), extract_labels(dset_style_valid)
     
-    generated_datset_train = generate(labeled_content_train, labeled_style_train, progress_dict, style_id+'_train')
-    generated_datset_valid = generate(labeled_content_valid, labeled_style_valid, progress_dict, style_id+'_valid')
+    p1 = multiprocessing.Process(target=generate, args=(labeled_content_train, labeled_style_train, progress_dict, result_dict, style_id+'_train'))
+    p2 = multiprocessing.Process(target=generate, args=(labeled_content_valid, labeled_style_valid, progress_dict, result_dict, style_id+'_valid', 500))
     
-    result_dict[f"{style_id}_train"] = generated_datset_train
-    result_dict[f"{style_id}_valid"] = generated_datset_valid
+    p1.start()
+    p2.start()
+    
+    p1.join()
+    p2.join()
 
 if __name__ == "__main__":
         
