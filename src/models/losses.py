@@ -3,8 +3,8 @@ import numpy as np
 import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # This will make TensorFlow run on CPU
 
-
 import tensorflow as tf
+import pandas as pd
 
 # Helper functions to extract stylized features from time series
 
@@ -20,18 +20,12 @@ def trend_extraction(series, window_size=2, axis=-1):
     Returns:
         np.array: An array with the same shape as input, with the trend extracted for each time series.
     """
-    # Ensure the input is a numpy array
-    series = np.asarray(series)
+    # _series = pd.DataFrame(series.T)
+    _series = pd.DataFrame(series[0])
     
-    # Moving average kernel
-    kernel = np.ones(window_size) / window_size
+    _means = _series.rolling(window_size, min_periods=0, center=True).mean().values
     
-    # Apply the convolution along the specified axis
-    if series.ndim == 1:  # 1D case
-        return np.convolve(series, kernel, mode='same')
-    else:
-        # Handle multi-dimensional arrays
-        return np.apply_along_axis(lambda m: np.convolve(m, kernel, mode='same'), axis, series)
+    return _means.reshape(series.shape)
     
 
 def autocorrelation(series, lag=1, axis=1):

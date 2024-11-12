@@ -1,4 +1,6 @@
 import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
 from src.data import data_loader as dataLoader
 
 def extract_labels(dset) -> tf.data.Dataset:
@@ -22,3 +24,19 @@ def load_dset(df_path:str, drop_labels=False, bs = 64) -> tf.data.Dataset:
     overlap = 0.05
     
     return dataLoader.loading_wrapper(df_path, sequence_length, gran, overlap, bs, drop_labels=drop_labels)
+
+
+def plot_several_sequence(dset:np.ndarray, count:int):
+    """Take a (n_sequences, n_features, sequence_length) and display `count` sequences
+
+    Args:
+        dset (np.ndarray): A np array of shape (n_sequences, n_features, sequence_length);
+        count (int): The number of sequences to display.;
+    """
+    for i in range(count):
+        fig = plt.figure(figsize=(18, 3))
+        
+        plt.plot(dset[i][0], '.-')
+        plt.grid()
+        plt.show()
+        plt.close(fig)

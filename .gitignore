@@ -12,3 +12,4 @@ data/generated/
 *.csv
 *.dat
 *.tfrecords
+*.npy
