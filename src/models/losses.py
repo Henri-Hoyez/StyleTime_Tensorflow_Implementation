@@ -26,6 +26,11 @@ def trend_extraction(series, window_size=2, axis=-1):
     _means = _series.rolling(window_size, min_periods=0, center=True).mean().values
     
     return _means.reshape(series.shape)
+
+
+
+def log_return(yt):
+    return yt[:, 1:] - yt[:, :-1]  
     
 
 def autocorrelation(series, lag=1, axis=1):
@@ -40,9 +45,10 @@ def autocorrelation(series, lag=1, axis=1):
     Returns:
         np.array: The autocorrelation values along the specified axis, with the same shape as input except the axis of interest.
     """
-    
-    ts_mean = tf.math.reduce_mean(series, axis=1)
-    numerator = tf.math.reduce_sum((series[0, :-lag] - ts_mean) * (series[0, lag:] - ts_mean))
+
+    ts_mean = tf.math.reduce_mean(log_return(series), axis=-1)
+
+    numerator = tf.math.reduce_sum((series[:, :-lag] - ts_mean) * (series[:, lag:] - ts_mean))
     denominator = tf.math.reduce_sum((series - ts_mean) ** 2)
 
     return numerator / denominator if denominator != 0 else 0
@@ -50,7 +56,7 @@ def autocorrelation(series, lag=1, axis=1):
 
 def volatility(series, eps=1e-8):
     """Returns the volatility (standard deviation of log returns) of the series."""
-    _mean = tf.math.reduce_mean(series, axis=1)
+    _mean = tf.math.reduce_mean(log_return(series), axis=1)
     
     _diff = tf.math.reduce_sum(tf.math.square(series - _mean))/(series.shape[1]-2)
     
@@ -75,11 +81,11 @@ def style_loss(y, y_s):
     volatility_loss = tf.abs(volatility(y) - volatility(y_s))
     psd_loss = tf.abs(power_spectral_density(y) - power_spectral_density(y_s))
 
+
     volatility_loss = tf.cast(volatility_loss, tf.float32)  
     psd_loss = tf.cast(psd_loss, tf.float32)  
         
-    # return autocorr_loss + volatility_loss
-    return autocorr_loss + volatility_loss# + psd_loss
+    return autocorr_loss + volatility_loss + psd_loss
 
 def total_variation_loss(y):
     """Encourages smoothness in the generated series by penalizing large changes."""

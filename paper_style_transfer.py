@@ -77,21 +77,31 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("content_dset_path", type=str)
     parser.add_argument("style_dset_path", type=str)
+    
+    parser.add_argument("--alpha", default=500., help='The coeficient of the content loss.', type=float)
+    parser.add_argument("--beta", default=10., help='The coeficient of the style loss.', type=float)
+    parser.add_argument("--gamma", default=5., help='The coeficient of the total Variation loss loss.', type=float)
+    parser.add_argument("--lr", default=0.005, help='The learning rate of style transfer optimizer.', type=float)
+    parser.add_argument("--fit_epochs", default=600, help='Number of itteration of the style Transfer algorithm.', type=int)
+    
     args = parser.parse_args()
 
     path = get_path(args.content_dset_path)
     filename = get_name(args.content_dset_path)
     
+    alpha = args.alpha
+    beta = args.beta
+    gamma = args.gamma
+    epochs = args.fit_epochs
+    lr = args.lr
 
     perturbed_content_train = np.load(args.content_dset_path)
     style_train = np.load(args.style_dset_path)
     transfered_style = []
     c_losses, s_losses, total_losses = [], [], []
-    
-    
 
     for (c_seq, s_seq) in tqdm(zip(perturbed_content_train, style_train),total=perturbed_content_train.shape[0]):
-        results, cl, sl, tl = style_time(c_seq, s_seq, 1000, verbose=0, alpha=1000., beta=50., learning_rate=0.01)
+        results, cl, sl, tl = style_time(c_seq, s_seq, epochs, verbose=0, alpha=alpha, beta=beta, gamma=gamma, learning_rate=lr)
         transfered_style.append(results)
         
         c_losses.append(cl)
@@ -104,7 +114,9 @@ def main():
     s_losses = np.array(s_losses)
     total_losses = np.array(total_losses)
     
-    plot_loss_curves(c_losses, s_losses, total_losses, f"{path}/losses.png")
+    print("[+] Saving to ", f"{path}/{filename}[...]")
+    
+    plot_loss_curves(c_losses, s_losses, total_losses, f"{path}/{filename}_losses.png")
     
     np.save(f"{path}/{filename}_transfered.npy", transfered_style)
 

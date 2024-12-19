@@ -32,6 +32,11 @@ def normalize(dataframe:pd.DataFrame):
     return (dataframe - _min)/(_max - _min)
 
 
+def standardize(dataframe:pd.DataFrame):
+    _mean, _std = dataframe.mean(), dataframe.std()
+
+    return (dataframe - _mean)/(_std)
+
 ####
 
 def make_step_function(
@@ -40,20 +45,23 @@ def make_step_function(
     step_value:float):
     
     _step = np.zeros_like(x)
-    _step[step_time:] = step_value
+    _step[:, step_time:] = step_value    
     
-    return x+ _step
+    return x + _step
 
 
 def make_perturbed_dataset(dset:pd.DataFrame):
     rng = np.random.default_rng() # Applying the new numpy Generator.
     perturbed_dataset = []
+    choices = [-1, 1]
 
     for sequence in dset:
-        random_time = int(np.random.uniform(0, sequence.shape[0]))
-        std_value= np.std(sequence)
-        random_value = np.random.uniform(-std_value, std_value)
+        random_time = int(np.random.uniform(0, sequence.shape[1]))
+        std_value= np.std(sequence)* 5
         
+        rnd_idx = np.random.choice(2)
+        random_value= std_value* choices[rnd_idx]
+                
         perturbed_dataset.append(make_step_function(sequence, random_time, random_value))
     
-    return rng.permutation(perturbed_dataset)
+    return np.array(perturbed_dataset)

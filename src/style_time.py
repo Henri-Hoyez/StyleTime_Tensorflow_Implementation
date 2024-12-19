@@ -23,7 +23,7 @@ def style_time(content_series, style_series, iterations=5000, alpha=0.5 , beta=1
     total_losses = []
     
     
-    optimizer = tf.optimizers.RMSprop(learning_rate=learning_rate)
+    optimizer = tf.optimizers.Adam(learning_rate=learning_rate)
     
     for i in range(iterations):
         with tf.GradientTape() as tape:
@@ -44,7 +44,7 @@ def style_time(content_series, style_series, iterations=5000, alpha=0.5 , beta=1
         optimizer.apply_gradients(zip(gradients, [y]))
         
         if i % 10 == 0 and verbose == 1:
-            print(f"\rIteration {i}/{iterations}. content loss {alpha* c_loss:0.2f}, Style loss {beta* s_loss:0.2f}, tv loss {gamma * tv_loss:0.2f}, Total Loss: {total_loss.numpy():0.2f}", end="")
+            print(f"\rIteration {i}/{iterations}. content loss {c_loss:0.2f}, Style loss {s_loss:0.2f}, tv loss {tv_loss:0.2f}, Total Loss: {total_loss.numpy():0.2f}", end="")
         # exit()
 
     return y.numpy(), c_losses, s_losses, total_losses
